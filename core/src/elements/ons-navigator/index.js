@@ -366,7 +366,6 @@ class NavigatorElement extends BaseElement {
   popPage(options = {}) {
 
     var lastPage = this.pages[this.pages.length - 1];
-      // TODO options.refresh
     if (options.refresh) {
       const index = this.pages.length - 2;
 
@@ -941,41 +940,38 @@ class NavigatorElement extends BaseElement {
       if (item >= this.pages.length) {
         throw new Error('The provided index does not match an existing page.');
       }
-      options.page = this.pages[index].page;
+      options.page = this.pages[index].name;
     } else {
       throw new Error('First argument must be a page name or the index of an existing page. You supplied ' + item);
     }
 
+    console.log('index : ' + (index));
+    console.log('index : ' + (this.pages.length - 1));
 
     if (index < 0) {
+      console.log('push');
       // Fallback pushPage
-      return this._pushPage(options);
+      return this.pushPage(options.page, options);
     } else if (index === this.pages.length - 1) {
+      console.log('already top');
       // Page is already the top
       return Promise.resolve(this.pages[index]);
     } else {
+      console.log('bring to top');
       // Bring to top
-      const tryBringPageTop = () => {
-        const unlock = this._doorLock.lock();
-        const done = function() {
-          unlock();
-        };
+        let selectedPage = this.pages[index];
+        // selectedPage.style.display = 'block';
+        selectedPage.setAttribute('_skipinit', '');
 
-        let pageObject = this.pages.splice(index, 1)[0];
-        pageObject.element.style.display = 'block';
-        pageObject.element.setAttribute('_skipinit', '');
+        // move element to the last child
+        selectedPage.parentNode.appendChild(selectedPage);
 
         if (options.animation) {
           options.animator = this._animatorFactory.newAnimator(options);
         }
-
-        pageObject.options = util.extend(pageObject.options, options);
-        return this._pushPageDOM(pageObject, done);
-      };
-
-      return new Promise(resolve => {
-        this._doorLock.waitUnlock(() => resolve(tryBringPageTop()));
-      });
+        // selectedPage.options = util.extend(pageObject.options, options);
+        //
+        return  this._pushPage(options);
     }
   }
 
