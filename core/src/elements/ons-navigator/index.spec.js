@@ -31,8 +31,7 @@ describe('OnsNavigatorElement', () => {
   it('should exist', () => {
     expect(window.OnsNavigatorElement).to.be.ok;
   });
-  
-  
+
   it('provides \'page\' attribute', () => {
       let content = nav.getCurrentPage()._getContentElement();
       expect(content.innerHTML).to.equal('hoge');
@@ -50,228 +49,228 @@ describe('OnsNavigatorElement', () => {
     });
   });
 
-  // describe('#pushPage()', () => {
-  //   it('adds a new page to the top of the page stack', (done) => {
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => {
-  //         let content = nav.getCurrentPage()._getContentElement();
-  //         expect(nav.pages.length).to.equal(2);
-  //         expect(content.innerHTML).to.equal('hoge');
-  //         done();
-  //       }
-  //     });
-  //   });
-  //
-  //   it('adds a new page to the top of the page stack using options.pageHTML', (done) => {
-  //     nav.pushPage({
-  //       pageHTML: '<ons-page>hoge2</ons-page>',
-  //       onTransitionEnd: () => {
-  //         let content = nav.getCurrentPage()._getContentElement();
-  //         expect(nav.pages.length).to.equal(2);
-  //         expect(content.innerHTML).to.equal('hoge2');
-  //         done();
-  //       }
-  //     });
-  //   });
-  //
-  //   it('only accepts object options', () => {
-  //     expect(() => nav.pushPage('hoge', 'string')).to.throw(Error);
-  //   });
-  //
-  //   it('is canceled if already performing another pushPage', (done, rej) => {
-  //     var spy = chai.spy.on(nav, '_pushPage');
-  //
-  //     var counter = 0;
-  //
-  //     var myFun = (num, ok) => {
-  //       counter++;
-  //
-  //       if (num == 0 && !ok) {
-  //         throw 'First pushPage should go through';
-  //       }
-  //
-  //       if (num == 1 && ok) {
-  //         throw 'Second pushPage should not go through';
-  //       }
-  //
-  //       if (counter == 2) {
-  //         done();
-  //       }
-  //     }
-  //
-  //     var promise1 = nav.pushPage('hoge', {}).then(() => {
-  //       myFun(0, true);
-  //     }, () => {
-  //       myFun(0, false);
-  //     });
-  //
-  //     var promise2 =nav.pushPage('hoge', {'cancelIfRunning': true}).then(() => {
-  //       myFun(1, true);
-  //     }, () => {
-  //       myFun(1, false);
-  //     });
-  //
-  //     expect(promise1).to.eventually.be.fulfilled;
-  //     expect(promise2).to.eventually.be.rejected;
-  //   });
-  //
-  // });
+  describe('#pushPage()', () => {
+    it('adds a new page to the top of the page stack', (done) => {
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => {
+          let content = nav.getCurrentPage()._getContentElement();
+          expect(nav.pages.length).to.equal(2);
+          expect(content.innerHTML).to.equal('hoge');
+          done();
+        }
+      });
+    });
 
-  // describe('#popPage()', () => {
-  //   it('only accepts object options', () => {
-  //     expect(() => nav.popPage('hoge', 'string')).to.throw(Error);
-  //   });
-  //
-  //   it('throws error if the stack is empty', (done) => {
-  //     nav.popPage().then( null, () => {
-  //       done();
-  //     });
-  //   });
-  //
-  //   it('removes the top page from the stack', (done) => {
-  //     nav.pushPage('fuga', {
-  //       onTransitionEnd: () => {
-  //         let content = nav.getCurrentPage()._getContentElement();
-  //         expect(content.innerHTML).to.equal('fuga');
-  //
-  //         nav.popPage({
-  //           onTransitionEnd: () => {
-  //             expect(nav.pages.length).to.equal(1);
-  //             let content = nav.getCurrentPage()._getContentElement();
-  //             expect(content.innerHTML).equal('hoge');
-  //             done();
-  //           }
-  //         });
-  //       }
-  //     });
-  //   });
-  //
-  //   it('is canceled if already performing another popPage', (done) => {
-  //     var calls = [false, false];
-  //     var finished = (num) => { 
-  //       calls[num] = true;
-  //       if (calls[0] && calls[1]) {
-  //         done();
-  //       }
-  //     };
-  //
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => {
-  //         var spy = chai.spy.on(nav, '_popPage');
-  //         var promise1 = nav.popPage().then((happy) => {
-  //           finished(0);
-  //         });
-  //
-  //         var promise2 = nav.popPage({'cancelIfRunning': true}).then(() => {
-  //           console.log('ok 2');
-  //         }, () => {
-  //           finished(1);
-  //         });
-  //
-  //       }
-  //     });
-  //   });
-  //
-  //   it('can refresh the previous page', (done) => {
-  //     nav.pushPage('info', {
-  //       onTransitionEnd: () => {
-  //         var content = nav.getCurrentPage()._getContentElement();
-  //         content.innerHTML = 'piyo';
-  //
-  //         nav.pushPage('fuga', {
-  //           onTransitionEnd: () => {
-  //             nav.popPage({
-  //               refresh: true,
-  //               onTransitionEnd: () => {
-  //                 console.log('transition end');
-  //                 console.log(nav.getCurrentPage()._getContentElement().innerHTML);
-  //                 var content = nav.getCurrentPage()._getContentElement();
-  //                 expect(content.innerHTML).to.equal('info');
-  //                 done();
-  //               }
-  //             });
-  //           }
-  //         });
-  //       }
-  //     });
-  //   });
-  //
-  //   it('throws error when refreshing pages directly inside the navigator', (done) => {
-  //     nav.innerHTML = '<ons-page> Test </ons-page>';
-  //
-  //     return nav.pushPage('hoge').then(() => {
-  //       try {
-  //         nav.popPage({ refresh: true });
-  //       } catch(err) {
-  //         console.log('error catched');
-  //         done();
-  //       }
-  //     });
-  //   });
-  //
-  //   it('emits \'prepop\' event', () => {
-  //     let promise = new Promise((resolve) => {
-  //       nav.addEventListener('prepop', (event) => { resolve(event); });
-  //     });
-  //
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => nav.popPage()
-  //     });
-  //
-  //     return expect(promise).to.eventually.be.fulfilled;
-  //   });
-  //
-  //   it('should be possible to cancel the \'prepop\' event', (done) => {
-  //     nav.addEventListener('prepop', (event) => {
-  //       event.detail.cancel();
-  //     });
-  //
-  //     expect(nav.pages.length).to.equal(1);
-  //
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => {
-  //         expect(nav.pages.length).to.equal(2);
-  //         nav.popPage();
-  //         expect(nav.pages.length).to.equal(2);
-  //         done();
-  //       }
-  //     });
-  //   });
-  //
-  //   it('emits \'postpop\' event', () => {
-  //     let promise = new Promise((resolve) => {
-  //       nav.addEventListener('postpop', (event) => { resolve(event); });
-  //     });
-  //
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => nav.popPage()
-  //     });
-  //
-  //     return expect(promise).to.eventually.be.fulfilled;
-  //   });
-  //
-  //   it('emits \'show\' event', (done) => {
-  //     let promise = new Promise((resolve) => {
-  //       nav.addEventListener('show', (event) => { resolve(event); });
-  //     });
-  //
-  //     nav.pushPage('hoge', {
-  //       onTransitionEnd: () => nav.popPage({
-  //         onTransitionEnd: () => done()
-  //       })
-  //     });
-  //
-  //     return expect(promise).to.eventually.be.fulfilled;
-  //   });
-  //
-  //   it('returns a promise that resolves to the new top page', () => {
-  //     return nav.pushPage('hoge').then(() => {
-  //       return expect(nav.popPage()).to.eventually.be.fulfilled.then(
-  //         page => expect(page).to.equal(nav.getCurrentPage())
-  //       );
-  //     });
-  //   });
-  // });
+    it('adds a new page to the top of the page stack using options.pageHTML', (done) => {
+      nav.pushPage({
+        pageHTML: '<ons-page>hoge2</ons-page>',
+        onTransitionEnd: () => {
+          let content = nav.getCurrentPage()._getContentElement();
+          expect(nav.pages.length).to.equal(2);
+          expect(content.innerHTML).to.equal('hoge2');
+          done();
+        }
+      });
+    });
+
+    it('only accepts object options', () => {
+      expect(() => nav.pushPage('hoge', 'string')).to.throw(Error);
+    });
+
+    it('is canceled if already performing another pushPage', (done, rej) => {
+      var spy = chai.spy.on(nav, '_pushPage');
+
+      var counter = 0;
+
+      var myFun = (num, ok) => {
+        counter++;
+
+        if (num == 0 && !ok) {
+          throw 'First pushPage should go through';
+        }
+
+        if (num == 1 && ok) {
+          throw 'Second pushPage should not go through';
+        }
+
+        if (counter == 2) {
+          done();
+        }
+      }
+
+      var promise1 = nav.pushPage('hoge', {}).then(() => {
+        myFun(0, true);
+      }, () => {
+        myFun(0, false);
+      });
+
+      var promise2 =nav.pushPage('hoge', {'cancelIfRunning': true}).then(() => {
+        myFun(1, true);
+      }, () => {
+        myFun(1, false);
+      });
+
+      expect(promise1).to.eventually.be.fulfilled;
+      expect(promise2).to.eventually.be.rejected;
+    });
+
+  });
+
+  describe('#popPage()', () => {
+    it('only accepts object options', () => {
+      expect(() => nav.popPage('hoge', 'string')).to.throw(Error);
+    });
+
+    it('throws error if the stack is empty', (done) => {
+      nav.popPage().then( null, () => {
+        done();
+      });
+    });
+
+    it('removes the top page from the stack', (done) => {
+      nav.pushPage('fuga', {
+        onTransitionEnd: () => {
+          let content = nav.getCurrentPage()._getContentElement();
+          expect(content.innerHTML).to.equal('fuga');
+
+          nav.popPage({
+            onTransitionEnd: () => {
+              expect(nav.pages.length).to.equal(1);
+              let content = nav.getCurrentPage()._getContentElement();
+              expect(content.innerHTML).equal('hoge');
+              done();
+            }
+          });
+        }
+      });
+    });
+
+    it('is canceled if already performing another popPage', (done) => {
+      var calls = [false, false];
+      var finished = (num) => {
+        calls[num] = true;
+        if (calls[0] && calls[1]) {
+          done();
+        }
+      };
+
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => {
+          var spy = chai.spy.on(nav, '_popPage');
+          var promise1 = nav.popPage().then((happy) => {
+            finished(0);
+          });
+
+          var promise2 = nav.popPage({'cancelIfRunning': true}).then(() => {
+            console.log('ok 2');
+          }, () => {
+            finished(1);
+          });
+
+        }
+      });
+    });
+
+    it('can refresh the previous page', (done) => {
+      nav.pushPage('info', {
+        onTransitionEnd: () => {
+          var content = nav.getCurrentPage()._getContentElement();
+          content.innerHTML = 'piyo';
+
+          nav.pushPage('fuga', {
+            onTransitionEnd: () => {
+              nav.popPage({
+                refresh: true,
+                onTransitionEnd: () => {
+                  console.log('transition end');
+                  console.log(nav.getCurrentPage()._getContentElement().innerHTML);
+                  var content = nav.getCurrentPage()._getContentElement();
+                  expect(content.innerHTML).to.equal('info');
+                  done();
+                }
+              });
+            }
+          });
+        }
+      });
+    });
+
+    it('throws error when refreshing pages directly inside the navigator', (done) => {
+      nav.innerHTML = '<ons-page> Test </ons-page>';
+
+      return nav.pushPage('hoge').then(() => {
+        try {
+          nav.popPage({ refresh: true });
+        } catch(err) {
+          console.log('error catched');
+          done();
+        }
+      });
+    });
+
+    it('emits \'prepop\' event', () => {
+      let promise = new Promise((resolve) => {
+        nav.addEventListener('prepop', (event) => { resolve(event); });
+      });
+
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => nav.popPage()
+      });
+
+      return expect(promise).to.eventually.be.fulfilled;
+    });
+
+    it('should be possible to cancel the \'prepop\' event', (done) => {
+      nav.addEventListener('prepop', (event) => {
+        event.detail.cancel();
+      });
+
+      expect(nav.pages.length).to.equal(1);
+
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => {
+          expect(nav.pages.length).to.equal(2);
+          nav.popPage();
+          expect(nav.pages.length).to.equal(2);
+          done();
+        }
+      });
+    });
+
+    it('emits \'postpop\' event', () => {
+      let promise = new Promise((resolve) => {
+        nav.addEventListener('postpop', (event) => { resolve(event); });
+      });
+
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => nav.popPage()
+      });
+
+      return expect(promise).to.eventually.be.fulfilled;
+    });
+
+    it('emits \'show\' event', (done) => {
+      let promise = new Promise((resolve) => {
+        nav.addEventListener('show', (event) => { resolve(event); });
+      });
+
+      nav.pushPage('hoge', {
+        onTransitionEnd: () => nav.popPage({
+          onTransitionEnd: () => done()
+        })
+      });
+
+      return expect(promise).to.eventually.be.fulfilled;
+    });
+
+    it('returns a promise that resolves to the new top page', () => {
+      return nav.pushPage('hoge').then(() => {
+        return expect(nav.popPage()).to.eventually.be.fulfilled.then(
+          page => expect(page).to.equal(nav.getCurrentPage())
+        );
+      });
+    });
+  });
 
   describe('#bringPageTop()', () => {
 
@@ -338,44 +337,34 @@ describe('OnsNavigatorElement', () => {
     it('only accepts object options', () => {
       expect(() => nav.bringPageTop('hoge', 'string')).to.throw(Error);
     });
-    //
-    //
-    // itI('is canceled if already performing another bringPageTop', (done) => {
-    //   setImmediate( () => {
-    //     let spy = chai.spy.on(nav, '_pushPage');
-    //     nav.bringPageTop('hoge', {});
-    //     nav.bringPageTop('fuga', {'cancelIfRunning': true});
-    //     expect(spy).to.have.been.called.once;
-    //     done();
-    //   });
-    // });
-    //
-    // it('should be possible to cancel the \'prepush\' event', (done) => {
-    //   expect(nav.pages.length).to.equal(1);
-    //
-    //   nav.bringPageTop('hoge', {onTransitionEnd: () => {
-    //     expect(nav.pages.length).to.equal(2);
-    //
-    //     nav.addEventListener('prepush', (event) => {
-    //       event.detail.cancel();
-    //     });
-    //
-    //     nav.bringPageTop('fuga');
-    //     expect(nav.pages.length).to.equal(2);
-    //
-    //     done();
-    //   }});
-    // });
-    //
-    // it('returns a promise that resolves to the new top page', () => {
-    //   return nav.pushPage('hoge').then(() => {
-    //     return nav.pushPage('fuga').then(() => {
-    //       return expect(nav.bringPageTop('hoge')).to.eventually.be.fulfilled.then(
-    //         page => expect(page).to.equal(nav.getCurrentPage())
-    //       );
-    //     });
-    //   });
-    // });
+
+
+    it('should be possible to cancel the \'prepush\' event', (done) => {
+      expect(nav.pages.length).to.equal(1);
+
+      nav.bringPageTop('info', {onTransitionEnd: () => {
+        expect(nav.pages.length).to.equal(2);
+
+        nav.addEventListener('prepush', (event) => {
+          event.detail.cancel();
+        });
+
+        nav.bringPageTop('fuga').then(null, () => {
+          expect(nav.pages.length).to.equal(2);
+          done();
+        });
+      }});
+    });
+
+    it('returns a promise that resolves to the new top page', () => {
+      return nav.pushPage('info').then(() => {
+        return nav.pushPage('fuga').then(() => {
+          return expect(nav.bringPageTop('info')).to.eventually.be.fulfilled.then(
+            page => expect(page).to.equal(nav.getCurrentPage())
+          );
+        });
+      });
+    });
   });
 
   // describe('#insertPage()', () => {

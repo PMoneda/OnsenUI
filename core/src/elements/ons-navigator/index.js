@@ -945,19 +945,14 @@ class NavigatorElement extends BaseElement {
       throw new Error('First argument must be a page name or the index of an existing page. You supplied ' + item);
     }
 
-    console.log('index : ' + (index));
-    console.log('index : ' + (this.pages.length - 1));
 
     if (index < 0) {
-      console.log('push');
       // Fallback pushPage
       return this.pushPage(options.page, options);
     } else if (index === this.pages.length - 1) {
-      console.log('already top');
       // Page is already the top
       return Promise.resolve(this.pages[index]);
     } else {
-      console.log('bring to top');
       // Bring to top
         let selectedPage = this.pages[index];
         // selectedPage.style.display = 'block';
