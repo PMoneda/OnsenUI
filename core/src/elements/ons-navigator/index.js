@@ -542,14 +542,19 @@ class NavigatorElement extends BaseElement {
 
       const run = templateHTML => {
         const element = this._createPageElement(templateHTML);
-        const pageObject = this._createPageObject(page, element, options);
+
+        // TODO set options
+        element.name = page;
+        // const pageObject = this._createPageObject(page, element, options);
 
         return new Promise(resolve => {
           rewritables.link(this, element, options, element => {
             element.style.display = 'none';
-            this.insertBefore(element, this.pages[index].element);
-            this.pages.splice(index, 0, pageObject);
-            this.getCurrentPage().updateBackButton();
+            this.insertBefore(element, this.pages[index]);
+
+            // this.pages.splice(index, 0, pageObject);
+            // todo update backbutton
+            // this.getCurrentPage().updateBackButton();
 
             setTimeout(() => {
               unlock();
