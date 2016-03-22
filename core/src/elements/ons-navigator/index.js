@@ -321,7 +321,7 @@ class NavigatorElement extends BaseElement {
 
     options.onTransitionEnd = () => {
       if (this.pages.length > 1) {
-        this.pages[this.pages.length - 2].destroy();
+        this.pages[this.pages.length - 2]._destroy();
       }
       onTransitionEnd();
     };
@@ -700,9 +700,11 @@ class NavigatorElement extends BaseElement {
 
     options.onTransitionEnd = () => {
       while (this.pages.length > 1) {
-        this.pages.shift().destroy();
+        this.pages[0]._destroy();
       }
-      this.pages[0].updateBackButton();
+
+      // TODO update back button
+      // this.pages[0].updateBackButton();
       onTransitionEnd();
     };
 
