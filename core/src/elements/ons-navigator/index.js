@@ -378,8 +378,6 @@ class NavigatorElement extends BaseElement {
   }
 
   _popPage(options, update = () => Promise.resolve(), pages = []) {
-    console.log('popPage');
-
     if (typeof options !== 'object') {
       throw new Error('options must be an object. You supplied ' + options);
     }
@@ -401,7 +399,6 @@ class NavigatorElement extends BaseElement {
     const l = this.pages.length;
 
     const tryPopPage = (resolve) =>  () => {
-      console.log('tryPop');
       const unlock = this._doorLock.lock();
       if (this.pages.length <= 1) {
         throw new Error('ons-navigator\'s page stack is empty.');
@@ -410,7 +407,6 @@ class NavigatorElement extends BaseElement {
       if (this._emitPrePopEvent()) {
         return Promise.reject('Canceled in prepop event.');
       }
-
 
       var leavePage = this.pages[l - 1];
       var enterPage = this.pages[l - 2];
