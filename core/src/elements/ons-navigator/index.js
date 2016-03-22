@@ -366,18 +366,45 @@ class NavigatorElement extends BaseElement {
   popPage(options = {}) {
 
     var lastPage = this.pages[this.pages.length - 1];
-    var popUpdate = () => {
       // TODO options.refresh
+    if (options.refresh) {
+      const index = this.pages.length - 2;
+
+
+      if (!this.pages[index].name) {
+        throw new Error('Refresh option cannot be used with pages directly inside the Navigator. Use ons-template instead.');
+      }
+
+      var popUpdate = () => {
+        return internal.getPageHTMLAsync(this.pages[index].name).then(templateHTML => {
+          const element = this._createPageElement(templateHTML);
+
+          element.name =  this.name;
+          // TODO set options
+          return new Promise(resolve => {
+            rewritables.link(this, element, this._pages[index].options, element => {
+              this.insertBefore(element, this.pages[index] ? this.pages[index] : null);
+              this.pages[index + 1].destroy();
+              resolve();
+            });
+          });
+        });
+      };
+
+    } else {
+      var popUpdate = () => {
         return new Promise((resolve) => {
           lastPage._destroy();
           resolve();
         });
-    };
+      };
+    }
 
     return this._popPage(options, popUpdate);
   }
 
   _popPage(options, update = () => Promise.resolve(), pages = []) {
+    console.log('pop page');
     if (typeof options !== 'object') {
       throw new Error('options must be an object. You supplied ' + options);
     }
@@ -399,7 +426,9 @@ class NavigatorElement extends BaseElement {
     const l = this.pages.length;
 
     const tryPopPage = (resolve) =>  () => {
+      console.log('try pop');
       const unlock = this._doorLock.lock();
+      console.log('try pop 2');
       if (this.pages.length <= 1) {
         throw new Error('ons-navigator\'s page stack is empty.');
       }
@@ -426,6 +455,7 @@ class NavigatorElement extends BaseElement {
       }
 
       return new Promise( () => {
+        console.log('inside promise');
         const callback = () => {
           update(pages, this).then( () => {
             this._isPopping = false;
