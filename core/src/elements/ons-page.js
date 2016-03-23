@@ -427,6 +427,7 @@ class PageElement extends BaseElement {
   }
 
   _destroy() {
+    console.log('destroy page');
     this._hide();
 
     if (!this._isMuted) {

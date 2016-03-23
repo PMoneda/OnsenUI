@@ -465,15 +465,18 @@ class NavigatorElement extends BaseElement {
 
           update(pages, this).then( () => {
 
+            console.log('children : ' + this.children.length);
 
           this._isPopping = false;
           unlock();
 
+            console.log('children : ' + this.children.length);
           const event = util.triggerElementEvent(this, 'postpop', eventDetail);
 
-          if (typeof options.onTransitionEnd === 'function') {
-            options.onTransitionEnd();
-          }
+            console.log('children : ' + this.children.length);
+            if (typeof options.onTransitionEnd === 'function') {
+              options.onTransitionEnd();
+            }
 
             resolve(enterPage);
           });
@@ -542,6 +545,7 @@ class NavigatorElement extends BaseElement {
 
       const run = templateHTML => {
         const element = this._createPageElement(templateHTML);
+        CustomElements.upgrade(element);
 
         // TODO set options
         element.name = page;
@@ -1023,6 +1027,9 @@ class NavigatorElement extends BaseElement {
 
     const leavePage = this.getCurrentPage();
     const enterPage = this.pages[this.pages.length - 2];
+
+    console.log('leavePage : ', leavePage);
+    console.log('enterPage: ', enterPage);
     util.triggerElementEvent(this, 'prepop', {
       navigator: this,
       // TODO: currentPage will be deprecated

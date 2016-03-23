@@ -91,13 +91,14 @@ limitations under the License.
       _onPrepop: function(event) {
         var pages = event.detail.navigator.pages;
         angular.element(pages[pages.length - 2]).scope().$evalAsync();
-
         this._previousPageScope = angular.element(pages[pages.length - 1]).scope();
       },
 
       _onPostpop: function(event) {
+        console.log('destroy bindings');
         this._previousPageScope.$destroy();
-        this._previoousPageScope = null;
+        console.log('finish destroy');
+        this._previousPageScope = null;
       },
 
       _compileAndLink: function(pageElement, callback) {
