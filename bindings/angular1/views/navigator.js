@@ -95,10 +95,10 @@ limitations under the License.
       },
 
       _onPostpop: function(event) {
-        console.log('destroy bindings');
+        // var pages = event.navigator.pages;
+        // var el = angular.element(pages[pages.length - 2]).scope();
         this._previousPageScope.$destroy();
-        console.log('finish destroy');
-        this._previousPageScope = null;
+        // this._previousPageScope = null;
       },
 
       _compileAndLink: function(pageElement, callback) {

@@ -465,15 +465,11 @@ class NavigatorElement extends BaseElement {
 
           update(pages, this).then( () => {
 
-            console.log('children : ' + this.children.length);
-
           this._isPopping = false;
           unlock();
 
-            console.log('children : ' + this.children.length);
           const event = util.triggerElementEvent(this, 'postpop', eventDetail);
 
-            console.log('children : ' + this.children.length);
             if (typeof options.onTransitionEnd === 'function') {
               options.onTransitionEnd();
             }
@@ -725,16 +721,21 @@ class NavigatorElement extends BaseElement {
   }
 
   attachedCallback() {
-    console.log('page');
     this._deviceBackButtonHandler = deviceBackButtonDispatcher.createHandler(this, this._boundOnDeviceBackButton);
 
     rewritables.ready(this, () => {
       if (this.pages.length === 0) {
         if (this.hasAttribute('page')) {
-          console.log('pushPage');
           this.pushPage(this.getAttribute('page'), {animation: 'none'});
         }
       } else {
+        console.log('call me ones');
+        for (var i=0; i < this.pages.length; i++) {
+          console.log('init');
+          var element = this.pages[i];
+          rewritables.link(this, element, {}, element => { });
+        }
+
         this.pages[this.pages.length -1].updateBackButton();
       }
     });
@@ -793,10 +794,13 @@ class NavigatorElement extends BaseElement {
     } else {
       options.page = page;
     }
+    console.log('pushPage');
 
     const run = (templateHTML) => new Promise((resolve) => {
+      console.log('run');
       const element = this._createPageElement(templateHTML);
       CustomElements.upgrade(element);
+
       rewritables.link(this, element, options, element => {
         this.appendChild(element);
         resolve();
@@ -1028,8 +1032,6 @@ class NavigatorElement extends BaseElement {
     const leavePage = this.getCurrentPage();
     const enterPage = this.pages[this.pages.length - 2];
 
-    console.log('leavePage : ', leavePage);
-    console.log('enterPage: ', enterPage);
     util.triggerElementEvent(this, 'prepop', {
       navigator: this,
       // TODO: currentPage will be deprecated
