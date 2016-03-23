@@ -149,6 +149,7 @@ class PageElement extends BaseElement {
     this.eventDetail = {
       page: this
     };
+    this.options = {};
   }
 
   attachedCallback() {
@@ -170,12 +171,28 @@ class PageElement extends BaseElement {
     this.attributeChangedCallback('oninfinitescroll', null, infiniteScroll);
   }
 
+  updateBackButton() {
+    if (this.backButton) {
+      if (this.parentNode.pages.length === 1 || this.options._forceHideBackButton) {
+        this.backButton.hide();
+        this.options._forceHideBackButton = false;
+      } else {
+        this.backButton.show();
+      }
+    }
+  }
+
+
   set name(str) {
     this.setAttribute('name', str);
   }
 
   get name() {
    return this.getAttribute('name');
+  }
+
+  get backButton() {
+    return util.findChildRecursively(this, 'ons-back-button');
   }
 
   /**

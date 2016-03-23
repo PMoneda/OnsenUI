@@ -549,12 +549,9 @@ class NavigatorElement extends BaseElement {
 
         return new Promise(resolve => {
           rewritables.link(this, element, options, element => {
-            element.style.display = 'none';
+            // element.style.display = 'none';
             this.insertBefore(element, this.pages[index]);
-
-            // this.pages.splice(index, 0, pageObject);
-            // todo update backbutton
-            // this.getCurrentPage().updateBackButton();
+            this.getCurrentPage().updateBackButton();
 
             setTimeout(() => {
               unlock();
@@ -724,13 +721,17 @@ class NavigatorElement extends BaseElement {
   }
 
   attachedCallback() {
+    console.log('page');
     this._deviceBackButtonHandler = deviceBackButtonDispatcher.createHandler(this, this._boundOnDeviceBackButton);
 
     rewritables.ready(this, () => {
       if (this.pages.length === 0) {
         if (this.hasAttribute('page')) {
+          console.log('pushPage');
           this.pushPage(this.getAttribute('page'), {animation: 'none'});
         }
+      } else {
+        this.pages[this.pages.length -1].updateBackButton();
       }
     });
   }
@@ -843,18 +844,23 @@ class NavigatorElement extends BaseElement {
       return update(pages, this)
       .then(() => {
           const pageLength = this.pages.length;
+
+
           this.pages[pageLength -1].name = options.page;
+          this.pages
           // TODO set options
           // this.pages[pageLength -1].options = options;
 
           var enterPage  = this.pages[this.pages.length - 1];
           var leavePage = this.pages[this.pages.length - 2];
+          enterPage.updateBackButton();
+
 
           var done = () => {
 
-            // if (leavePage) {
-            //   leavePage.style.display = 'none';
-            // }
+            /*if (leavePage) {
+              leavePage.style.display = 'none';
+            }*/
 
             this._isPushing = false;
             unlock();
