@@ -181,8 +181,6 @@ describe('OnsNavigatorElement', () => {
               nav.popPage({
                 refresh: true,
                 onTransitionEnd: () => {
-                  console.log('transition end');
-                  console.log(nav.getCurrentPage()._getContentElement().innerHTML);
                   var content = nav.getCurrentPage()._getContentElement();
                   expect(content.innerHTML).to.equal('info');
                   done();
@@ -201,7 +199,6 @@ describe('OnsNavigatorElement', () => {
         try {
           nav.popPage({ refresh: true });
         } catch(err) {
-          console.log('error catched');
           done();
         }
       });
@@ -281,7 +278,7 @@ describe('OnsNavigatorElement', () => {
     });
 
     it('does nothing when the page is already on top', (done) => {
-      let spy = chai.spy.on(nav._doorLock, 'waitUnlock');
+      let spy = chai.spy.on(nav, '_pushPage');
       nav.bringPageTop('hoge');
       expect(spy).not.to.have.been.called();
       done();
@@ -475,12 +472,9 @@ describe('OnsNavigatorElement', () => {
     });
 
     it('replaces all the page stack with only a new page', (done) => {
-      console.log('replace');
       nav.pushPage('fuga', {onTransitionEnd: () => {
-        console.log('push');
         nav.resetToPage('hoge', {
           onTransitionEnd: () => {
-            console.log('reset');
             expect(nav.pages.length).to.equal(1);
             let content = nav.getCurrentPage()._getContentElement();
             expect(content.innerHTML).to.equal('hoge');

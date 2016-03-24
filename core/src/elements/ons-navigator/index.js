@@ -410,6 +410,10 @@ class NavigatorElement extends BaseElement {
       return Promise.reject('popPage is already running.');
     }
 
+    if (this.pages.length <= 1) {
+      return Promise.reject('ons-navigator\'s page stack is empty.');
+    }
+
     options = util.extend({}, this.options || {}, options);
 
     options.animationOptions = util.extend(
@@ -421,9 +425,8 @@ class NavigatorElement extends BaseElement {
     const l = this.pages.length;
 
     const tryPopPage = () => {
-      if (this.pages.length <= 1) {
-        return Promise.reject('ons-navigator\'s page stack is empty.');
-      }
+
+      this._isRunning = true;
 
       if (this._emitPrePopEvent()) {
         return Promise.reject('Canceled in prepop event.');
@@ -466,7 +469,6 @@ class NavigatorElement extends BaseElement {
       });
     };
 
-    this._isRunning = true;
 
     return tryPopPage()
       .catch(() => {
@@ -553,9 +555,7 @@ class NavigatorElement extends BaseElement {
       }
     };
 
-    return new Promise(resolve => {
-      return tryInsertPage();
-    });
+    return tryInsertPage();
   }
 
   _normalizeIndex(index) {
