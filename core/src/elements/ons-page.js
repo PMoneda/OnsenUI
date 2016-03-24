@@ -171,17 +171,15 @@ class PageElement extends BaseElement {
     this.attributeChangedCallback('oninfinitescroll', null, infiniteScroll);
   }
 
-  updateBackButton() {
+  updateBackButton(shouldShowButton) {
     if (this.backButton) {
-      if (this.parentNode.pages.length === 1 || this.options._forceHideBackButton) {
-        this.backButton.hide();
-        this.options._forceHideBackButton = false;
-      } else {
+      if (shouldShowButton) {
         this.backButton.show();
+      } else {
+        this.backButton.hide();
       }
     }
   }
-
 
   set name(str) {
     this.setAttribute('name', str);

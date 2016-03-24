@@ -305,18 +305,22 @@ class NavigatorElement extends BaseElement {
 
     const onTransitionEnd = options.onTransitionEnd || function() {};
 
-    if (this.pages.length === 1) {
-      options._forceHideBackButton = true;
-    }
-
     options.onTransitionEnd = () => {
       if (this.pages.length > 1) {
         this.pages[this.pages.length - 2]._destroy();
       }
+
+      this._updateLastPageBackButton();
+
       onTransitionEnd();
     };
 
     return this.pushPage(options.page, options);
+  }
+
+  _updateLastPageBackButton() {
+    const index = this.pages.length -1;
+    this.pages[index].updateBackButton(index > 0);
   }
 
   /**
@@ -376,7 +380,8 @@ class NavigatorElement extends BaseElement {
           const element = this._createPageElement(templateHTML);
 
           element.name =  this.name;
-          // TODO set options
+          element.options = options;
+
             rewritables.link(this, element, this.pages[index].options, element => {
               this.insertBefore(element, this.pages[index] ? this.pages[index] : null);
               this.pages[index + 1]._destroy();
@@ -431,18 +436,15 @@ class NavigatorElement extends BaseElement {
       if (this._emitPrePopEvent()) {
         return Promise.reject('Canceled in prepop event.');
       }
+      this.pages[l - 2].updateBackButton((l - 2) > 0);
 
       return new Promise(resolve => {
+        var leavePage = this.pages[l - 1];
+        var enterPage = this.pages[l - 2];
+        enterPage.style.display = 'block';
+
         const callback = () => {
-          var leavePage = this.pages[l - 1];
-          var enterPage = this.pages[l - 2];
-
-          if (enterPage) {
-            enterPage.style.display = 'block';
-            enterPage._show();
-          }
-
-          // TODO update backButton
+          enterPage._show();
           leavePage._hide();
 
           const eventDetail = {
@@ -530,15 +532,14 @@ class NavigatorElement extends BaseElement {
         const element = this._createPageElement(templateHTML);
         CustomElements.upgrade(element);
 
-        // TODO set options
         element.name = page;
-        // const pageObject = this._createPageObject(page, element, options);
+        element.options = options;
 
         return new Promise(resolve => {
           rewritables.link(this, element, options, element => {
-            // element.style.display = 'none';
+            element.style.display = 'none';
             this.insertBefore(element, this.pages[index]);
-            this.getCurrentPage().updateBackButton();
+            this.getCurrentPage().updateBackButton(true);
 
             setTimeout(() => {
               element = null;
@@ -684,8 +685,7 @@ class NavigatorElement extends BaseElement {
         this.pages[0]._destroy();
       }
 
-      // TODO update back button
-      // this.pages[0].updateBackButton();
+      this.pages[0].updateBackButton(false);
       onTransitionEnd();
     };
 
@@ -713,7 +713,7 @@ class NavigatorElement extends BaseElement {
           this.pushPage(this.getAttribute('page'), {animation: 'none'});
         }
       } else {
-        this.pages[this.pages.length - 1].updateBackButton();
+        this._updateLastPageBackButton();
       }
     });
   }
@@ -785,7 +785,6 @@ class NavigatorElement extends BaseElement {
     let update;
 
     if (options.pageHTML) {
-      // TODO testing
       update = () => run(options.pageHTML);
     } else {
       update = () => internal.getPageHTMLAsync(page).then(run);
@@ -825,11 +824,11 @@ class NavigatorElement extends BaseElement {
           const pageLength = this.pages.length;
 
           this.pages[pageLength -1].name = options.page;
-          this.pages
+          this.pages[pageLength -1].options = options;
 
           var enterPage  = this.pages[this.pages.length - 1];
           var leavePage = this.pages[this.pages.length - 2];
-          enterPage.updateBackButton();
+          enterPage.updateBackButton(this.pages.length -1);
 
           return new Promise(resolve => {
             var done = () => {
@@ -942,18 +941,13 @@ class NavigatorElement extends BaseElement {
     } else {
       // Bring to top
         let selectedPage = this.pages[index];
-        // selectedPage.style.display = 'block';
+         selectedPage.style.display = 'block';
         selectedPage.setAttribute('_skipinit', '');
 
         // move element to the last child
         selectedPage.parentNode.appendChild(selectedPage);
-
-        if (options.animation) {
-          options.animator = this._animatorFactory.newAnimator(options);
-        }
-        // selectedPage.options = util.extend(pageObject.options, options);
-        //
-        return  this._pushPage(options);
+        selectedPage.options = options;
+        return this._pushPage(options);
     }
   }
 
@@ -1000,7 +994,6 @@ class NavigatorElement extends BaseElement {
 
     util.triggerElementEvent(this, 'prepop', {
       navigator: this,
-      // TODO: currentPage will be deprecated
       currentPage: leavePage,
       leavePage: leavePage,
       enterPage: enterPage,
