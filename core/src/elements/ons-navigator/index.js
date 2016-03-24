@@ -210,12 +210,8 @@ class NavigatorElement extends BaseElement {
    *   [ja]popされて消えるページのオブジェクト。[/ja]
    */
   createdCallback() {
-    this._doorLock = new DoorLock();
     this._boundOnDeviceBackButton = this._onDeviceBackButton.bind(this);
-    this._isPushing = this._isPopping = false;
-    this.options = {
-      cancelIfRunning: true
-    };
+    this._isRunning = false;
 
     this._animatorFactory = new AnimatorFactory({
       animators: _animatorDict,
@@ -238,25 +234,19 @@ class NavigatorElement extends BaseElement {
 
   set options(object) {
     this._options = object;
-    if (!this._options.hasOwnProperty('cancelIfRunning')) {
-      this._options.cancelIfRunning = true;
+  }
+
+  set _isRunning(value) {
+    if (value) {
+      this.setAttribute('_is-running', 'true');
+    }
+    else {
+      this.setAttribute('_is-running', 'false');
     }
   }
 
-  set _isPushing(value) {
-    this.setAttribute('_isPushing', value);
-  }
-
-  get _isPushing() {
-   return this.getAttribute('_isPushing');
-  }
-
-  set _isPopping(value) {
-    this.setAttribute('_isPopping', value);
-  }
-
-  get _isPopping() {
-   return this.getAttribute('_isPopping');
+  get _isRunning() {
+   return JSON.parse(this.getAttribute('_is-running'));
   }
 
   /**
@@ -416,11 +406,9 @@ class NavigatorElement extends BaseElement {
       throw new Error('options must be an object. You supplied ' + options);
     }
 
-    if (options.cancelIfRunning && this._isPopping) {
+    if (this._isRunning) {
       return Promise.reject('popPage is already running.');
     }
-
-    this._isPopping = true;
 
     options = util.extend({}, this.options || {}, options);
 
@@ -432,20 +420,17 @@ class NavigatorElement extends BaseElement {
     const animator = this._animatorFactory.newAnimator(options);
     const l = this.pages.length;
 
-    const tryPopPage = (resolve) =>  () => {
-      const unlock = this._doorLock.lock();
+    const tryPopPage = () => {
       if (this.pages.length <= 1) {
-        throw new Error('ons-navigator\'s page stack is empty.');
+        return Promise.reject('ons-navigator\'s page stack is empty.');
       }
 
       if (this._emitPrePopEvent()) {
         return Promise.reject('Canceled in prepop event.');
       }
 
-      return new Promise( () => {
+      return new Promise(resolve => {
         const callback = () => {
-
-
           var leavePage = this.pages[l - 1];
           var enterPage = this.pages[l - 2];
 
@@ -465,8 +450,7 @@ class NavigatorElement extends BaseElement {
 
           update(pages, this).then( () => {
 
-          this._isPopping = false;
-          unlock();
+          this._isRunning = false;
 
           const event = util.triggerElementEvent(this, 'postpop', eventDetail);
 
@@ -482,9 +466,12 @@ class NavigatorElement extends BaseElement {
       });
     };
 
-    return new Promise(resolve => {
-      this._doorLock.waitUnlock(() => this._doorLock.waitUnlock(tryPopPage(resolve)));
-    });
+    this._isRunning = true;
+
+    return tryPopPage()
+      .catch(() => {
+        this._isRunning = false;
+      });
   }
 
 
@@ -537,8 +524,6 @@ class NavigatorElement extends BaseElement {
     }
 
     const tryInsertPage = () => {
-      const unlock = this._doorLock.lock();
-
       const run = templateHTML => {
         const element = this._createPageElement(templateHTML);
         CustomElements.upgrade(element);
@@ -554,7 +539,6 @@ class NavigatorElement extends BaseElement {
             this.getCurrentPage().updateBackButton();
 
             setTimeout(() => {
-              unlock();
               element = null;
               resolve(this.pages[index]);
             }, 1000 / 60);
@@ -570,7 +554,7 @@ class NavigatorElement extends BaseElement {
     };
 
     return new Promise(resolve => {
-      this._doorLock.waitUnlock(() => resolve(tryInsertPage()));
+      return tryInsertPage();
     });
   }
 
@@ -729,14 +713,7 @@ class NavigatorElement extends BaseElement {
           this.pushPage(this.getAttribute('page'), {animation: 'none'});
         }
       } else {
-        console.log('call me ones');
-        for (var i=0; i < this.pages.length; i++) {
-          console.log('init');
-          var element = this.pages[i];
-          rewritables.link(this, element, {}, element => { });
-        }
-
-        this.pages[this.pages.length -1].updateBackButton();
+        this.pages[this.pages.length - 1].updateBackButton();
       }
     });
   }
@@ -794,10 +771,8 @@ class NavigatorElement extends BaseElement {
     } else {
       options.page = page;
     }
-    console.log('pushPage');
 
     const run = (templateHTML) => new Promise((resolve) => {
-      console.log('run');
       const element = this._createPageElement(templateHTML);
       CustomElements.upgrade(element);
 
@@ -825,7 +800,7 @@ class NavigatorElement extends BaseElement {
       throw new Error('options must be an object. You supplied ' + options);
     }
 
-    if (options.cancelIfRunning && this._isPushing) {
+    if (this._isRunning) {
       return Promise.reject('pushPage is already running.');
     }
 
@@ -833,11 +808,7 @@ class NavigatorElement extends BaseElement {
       return Promise.reject('Canceled in prepush event.');
     }
 
-    this._isPushing = true;
-
-    const tryPushPage = (resolve) => () => {
-      const unlock = this._doorLock.lock();
-
+    const tryPushPage = () => {
       options = util.extend({}, this.options || {}, options);
 
       options.animationOptions = util.extend(
@@ -850,58 +821,53 @@ class NavigatorElement extends BaseElement {
       pages.push(page);
 
       return update(pages, this)
-      .then(() => {
+        .then(() => {
           const pageLength = this.pages.length;
-
 
           this.pages[pageLength -1].name = options.page;
           this.pages
-          // TODO set options
-          // this.pages[pageLength -1].options = options;
 
           var enterPage  = this.pages[this.pages.length - 1];
           var leavePage = this.pages[this.pages.length - 2];
           enterPage.updateBackButton();
 
+          return new Promise(resolve => {
+            var done = () => {
+              this._isRunning = false;
 
-          var done = () => {
+              const eventDetail = {
+                leavePage: leavePage,
+                enterPage: enterPage,
+                navigator: this
+              };
 
-            /*if (leavePage) {
-              leavePage.style.display = 'none';
-            }*/
+              util.triggerElementEvent(this, 'postpush', eventDetail);
 
-            this._isPushing = false;
-            unlock();
+              if (typeof options.onTransitionEnd === 'function') {
+                options.onTransitionEnd();
+              }
 
-            const eventDetail = {
-              leavePage: leavePage,
-              enterPage: enterPage,
-              navigator: this
+              resolve(enterPage);
             };
 
-            util.triggerElementEvent(this, 'postpush', eventDetail);
-
-            if (typeof options.onTransitionEnd === 'function') {
-              options.onTransitionEnd();
+            if (pageLength > 1) {
+              leavePage._hide();
+              enterPage._show();
+              animator.push(enterPage, leavePage, done);
+            } else {
+              enterPage._show();
+              done();
             }
-
-            resolve(enterPage);
-          };
-
-          if (pageLength > 1) {
-            leavePage._hide();
-            enterPage._show();
-            animator.push(enterPage, leavePage, done);
-          } else {
-            enterPage._show();
-            done();
-          }
+          });
       });
     };
 
-    return new Promise(resolve => {
-      this._doorLock.waitUnlock(() => this._doorLock.waitUnlock(tryPushPage(resolve)));
-    });
+    this._isRunning = true;
+
+    return tryPushPage()
+      .catch(() => {
+        this._isRunning = false;
+      });
   }
 
     /**
@@ -944,7 +910,7 @@ class NavigatorElement extends BaseElement {
 
     options = util.extend({}, this.options || {}, options);
 
-    if (options.cancelIfRunning && this._isPushing) {
+    if (this.isRunning) {
       return Promise.reject('pushPage is already running.');
     }
 
