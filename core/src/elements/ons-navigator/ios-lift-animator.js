@@ -19,20 +19,24 @@ import NavigatorTransitionAnimator from './animator';
 import util from 'ons/util';
 
 /**
- * Fade-in screen transition.
+ * Lift screen transition.
  */
-export default class FadeNavigatorTransitionAnimator extends NavigatorTransitionAnimator {
+export default class IOSLiftNavigatorTransitionAnimator extends NavigatorTransitionAnimator {
 
   constructor(options) {
     options = util.extend({
-      timing: 'linear',
-      duration: '0.4',
-      delay: '0'
+      duration: 0.4,
+      timing: 'cubic-bezier(.1, .7, .1, 1)',
+      delay: 0
     }, options || {});
 
     super(options);
-  }
 
+    this.backgroundMask = util.createElement(`
+      <div style="position: absolute; width: 100%; height: 100%;
+        background: linear-gradient(black, white);"></div>
+    `);
+  }
 
   /**
    * @param {Object} enterPage
@@ -40,15 +44,25 @@ export default class FadeNavigatorTransitionAnimator extends NavigatorTransition
    * @param {Function} callback
    */
   push(enterPage, leavePage, callback) {
+    this.backgroundMask.remove();
+    leavePage.parentNode.insertBefore(this.backgroundMask, leavePage);
+
+    const maskClear = animit(this.backgroundMask)
+      .wait(0.6)
+      .queue(done => {
+        this.backgroundMask.remove();
+        done();
+      });
 
     animit.runAll(
 
-      animit([enterPage._getContentElement(), enterPage._getBackgroundElement()])
+      maskClear,
+
+      animit(enterPage)
         .saveStyle()
         .queue({
           css: {
-            transform: 'translate3D(0, 0, 0)',
-            opacity: 0
+            transform: 'translate3D(0, 100%, 0)',
           },
           duration: 0
         })
@@ -56,36 +70,34 @@ export default class FadeNavigatorTransitionAnimator extends NavigatorTransition
         .queue({
           css: {
             transform: 'translate3D(0, 0, 0)',
-            opacity: 1
           },
           duration: this.duration,
           timing: this.timing
         })
+        .wait(0.2)
         .restoreStyle()
         .queue(function(done) {
           callback();
           done();
         }),
 
-      animit(enterPage._getToolbarElement())
-        .saveStyle()
+      animit(leavePage)
         .queue({
           css: {
             transform: 'translate3D(0, 0, 0)',
-            opacity: 0
+            opacity: 1.0
           },
           duration: 0
         })
         .wait(this.delay)
         .queue({
           css: {
-            transform: 'translate3D(0, 0, 0)',
-            opacity: 1
+            transform: 'translate3D(0, -10%, 0)',
+            opacity: 0.9
           },
           duration: this.duration,
           timing: this.timing
         })
-        .restoreStyle()
     );
 
   }
@@ -93,16 +105,26 @@ export default class FadeNavigatorTransitionAnimator extends NavigatorTransition
   /**
    * @param {Object} enterPage
    * @param {Object} leavePage
-   * @param {Function} done
+   * @param {Function} callback
    */
   pop(enterPage, leavePage, callback) {
+    this.backgroundMask.remove();
+    enterPage.parentNode.insertBefore(this.backgroundMask, enterPage);
+
     animit.runAll(
 
-      animit([leavePage._getContentElement(), leavePage._getBackgroundElement()])
+      animit(this.backgroundMask)
+        .wait(0.4)
+        .queue(done => {
+          this.backgroundMask.remove();
+          done();
+        }),
+
+      animit(enterPage)
         .queue({
           css: {
-            transform: 'translate3D(0, 0, 0)',
-            opacity: 1
+            transform: 'translate3D(0, -10%, 0)',
+            opacity: 0.9
           },
           duration: 0
         })
@@ -110,29 +132,28 @@ export default class FadeNavigatorTransitionAnimator extends NavigatorTransition
         .queue({
           css: {
             transform: 'translate3D(0, 0, 0)',
-            opacity: 0
+            opacity: 1.0
           },
           duration: this.duration,
           timing: this.timing
         })
+        .wait(0.4)
         .queue(function(done) {
           callback();
           done();
         }),
 
-      animit(leavePage._getToolbarElement())
+      animit(leavePage)
         .queue({
           css: {
-            transform: 'translate3D(0, 0, 0)',
-            opacity: 1
+            transform: 'translate3D(0, 0, 0)'
           },
           duration: 0
         })
         .wait(this.delay)
         .queue({
           css: {
-            transform: 'translate3D(0, 0, 0)',
-            opacity: 0
+            transform: 'translate3D(0, 100%, 0)'
           },
           duration: this.duration,
           timing: this.timing
